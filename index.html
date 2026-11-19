@@ -8,7 +8,22 @@
   </head>
   <body>
     <h1>Bibliothèque</h1>
+
+    <button id="btnAdd">Nouveau livre</button>
+    <dialog id="dialog">
+      <form id="formulaire">
+        <h2>Ajouter un livre</h2>
+        <label>Titre<input name="titre" required placeholder="ex. Le Seigneur des Anneaux..." /></label>
+        <label>Auteur<input name="auteur" required placeholder="ex. J. R. R. Tolkien" /></label>
+        <label>Pages<input name="pages" required min="1" type="number" value="1" placeholder="nombre de pages" /></label>
+        <label>déjà lu<input name="lu" type="checkbox" /></label>
+        <button type="submit">Ajouter</button>
+        <button type="button" id="retour">Retour</button>
+      </form>
+    </dialog>
+
     <ul id="liste-livres"></ul>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
