@@ -60,3 +60,59 @@ Démonstration XSS proposée (titre `<img onerror>` en `innerHTML` puis en `text
 3. Étapes 5 (supprimer, `data-id`) et 6 (bascule « lu »), puis habillage CSS classique.
 4. Ensuite : **lecture des composants classes React** (condition posée), test final sur Apheiro.
 5. Créneau court **event loop** toujours en attente.
+
+## Session 154 — Révisions `setTimeout` / dépendances + Library : fin de l'affichage, formulaire `<dialog>` (étape 4 ✅), cours `data-*` raté puis refait
+
+**Durée** : ~1h45 (jeudi, 13h-13h55 + reprise l'après-midi, interrompue). Énergie bonne. Pas d'arrêt net.
+
+**🎹 Raccourci** : `Alt+Maj+→` / `←` (Expand / Shrink Selection) — maintenu à sa demande.
+
+---
+
+### Révision éclair (2 items)
+
+- **Prédire — `setTimeout(…, 0)` / file d'attente** 🟢 : `A C0 C1 C2 E B D`, à froid. Trou de type A révélé en S143, désormais juste.
+- **Déboguer — dépendances d'un `useEffect`** 🟢 : props incluses, constante hors composant exclue avec la bonne raison. Précision donnée : l'effet lit `verre.prix` → `[verre.prix]` plutôt que `[verre]` (objet recréé par le parent = relance inutile). **2ᵉ fois juste à froid** (S147, S154).
+
+### Library — étape 3 (affichage) ✅
+
+- Retouches faites seul : auteur ajouté · « N pages » (+ pluriel page / pages, initiative) · **`!` + `if (!liste) return` redondants** : rôle de chacun énoncé juste par lui → `!` gardé (garantie structurelle, l'autre devient du code mort).
+- Tests passés, dont la **démonstration XSS** : titre `<img onerror>` affiché en texte, sans alerte.
+- **`npm run build` alors que rien n'est rouge** : soulignés = fichiers analysés (ouverts) / build = tout le projet → réflexe avant un commit de fin d'étape ou une PR. Compris.
+- **Dev vs build** expliqué à sa demande : dev = traduction à la volée en mémoire, rien sur le disque · build = regroupé, compressé, noms avec code, écrit dans `dist/` (régénérable). `dist/` supprimé par lui, sans conséquence. `.gitignore` contenant `dist` : **non vérifié**.
+- Git : PR `affichage` → `main` fusionnée (commit d'hier) · branche `formulaire` créée · retouches non validées de l'étape 3 passées sur `formulaire` (mécanisme compris).
+
+### Library — étape 4 (bouton + `<dialog>` + formulaire) ✅ 6/6
+
+- Tableau de correspondance React → DOM donné (`useRef` ↔ `querySelector`, `onClick` / `onSubmit` ↔ `addEventListener`, `new FormData(formulaire)` au lieu de `e.currentTarget`, typé `EventTarget | null`).
+- **Dialog qui ne s'ouvrait pas** : code juste, mais écrit dans un **nouveau fichier `ajout-livre.ts` jamais importé** → jamais exécuté. Diagnostic mené par observation (`console.log` absent, pas d'attribut `open`). Règle : le navigateur ne charge que le `<script>` de `index.html`, puis suit les `import`. **Décision** : tout dans `main.ts` pour l'instant (éviter un import circulaire), **découpage en modules (données / affichage / assemblage) à la fin**.
+- 🔴 **`?.` qui masque un `null`** : un écouteur posé avec `btn?.` échoue en silence. Remplacer par `!` sur une garantie structurelle. **Demandé 3 fois, `btn` et `btnRetour` encore en `?.`.**
+- 🟡 **Écouteur `submit` posé sur le bouton** → un seul indice (« quel élément émet `submit` ? ») a suffi. Rechute de la famille « seul `<form>` émet `submit` ».
+- 🟡 **Conversions `FormData`** : « rien dans le cours que je puisse utiliser » → point redonné (l'info était noyée dans le message de l'étape 4) avec l'exemple `String(...)`. **Écrit seul ensuite** : `String` ×2, `Number`, `Boolean(form.get("lu"))` (fonctionne) → `form.has("lu")` proposé (dit l'intention). `name` sur chaque champ, `type` explicite sur les deux boutons, `reset()` puis `close()` ✅.
+- « Plus pro ? » → c'est déjà la forme standard (conversion à l'entrée) ; Zod au SaaS ; `<form method="dialog">` écarté (complique Retour + `required`).
+- **Commit sur `formulaire` : à confirmer.**
+
+### Étape 5 (supprimer) — cours raté, refait, non lu
+
+- 1ᵉʳ cours : `data-*` / `dataset` + délégation + deux façons de retirer (`findIndex` / `splice` ou `filter`) **dans le même message** → « je ne comprends pas tes explications ».
+- Cours refait sur **`data-*` / `dataset` seul** : le problème d'abord (deux mondes : tableau / DOM ; le bouton cliqué ne sait pas quel livre il représente) · image de l'étiquette de référence sur une monture en vitrine · forme longue `setAttribute` / `getAttribute` → forme courte `dataset` · trajet écrire → lire → retrouver · observation `li.dataset.id` + `$0.dataset` dans la console. **Non lu (interruption) → à lire en ouverture.**
+- Délégation : **pas encore réexpliquée seule.**
+
+---
+
+**Niveaux** : `setTimeout` / file d'attente 🟢 (à froid) · tri des dépendances 🟢 (2ᵉ fois à froid) · `!` vs garde `if` 🟢 compris · `npm run build` (portée) 🟢 · dev vs build 🟢 compris · fichier non importé = jamais exécuté 🟡 · `?.` qui masque une erreur 🟡 (compris, pas appliqué) · `submit` sur le `<form>` 🟡 (rechute, un indice) · conversions `FormData` 🟢 (écrites seul après rappel) · `<dialog>` + formulaire en DOM 🟢 · `data-*` / `dataset` ❌ (cours non reçu) · délégation ❌.
+
+**⚠️ Mes erreurs**
+1. **Cours de l'étape 5 empilant trois notions** (`dataset`, délégation, deux façons de retirer). Récurrence du dosage. **Correctif** : une notion par message, le problème avant le code, la notion suivante seulement quand la première est comprise.
+2. **Point neuf (conversions `FormData`) placé dans un long message de cours**, puis indice qui renvoyait à ce message. **Correctif** : mettre le point neuf dans la consigne elle-même, et le redonner directement quand il manque.
+
+**🔄 Cycle de reprise** : classe TS → N+2 avec l'étape 6 (bascule « lu » par la méthode de la classe) · `FormData` → recroisé en contexte (conversions) ; `fromEntries` non rejoué · `@keyframes` → N+2 non joué, reporté à l'habillage · `Map` → autre code · `reduce` regroupement → à confirmer une fois.
+
+**🔄 Rotation** : **entrent** — fichier non importé = jamais exécuté · `?.` qui masque un `null` (préférer `!` sur garantie structurelle) · `submit` écouté sur le `<form>` (rechute) · conversions à la sortie de `FormData` (`String` / `Number` / `has`) · `npm run build` vs soulignés (portée) · dev vs build. **Descendent** — `setTimeout` / file d'attente (entretien, basse) · tri des dépendances (priorité moyenne).
+
+**⏭️ Prochaine étape**
+1. **Lire le cours `data-*` / `dataset`** (dernier message de la conversation) + observation `$0.dataset`.
+2. **Délégation expliquée seule**, puis exercice de l'étape 5 (bouton « Supprimer », `supprimerLivre(id)`, un seul écouteur sur la liste). Choix `splice` / `filter` à poser à ce moment-là.
+3. Étape 6 : bascule « lu » par le même écouteur + `basculerLu()`.
+4. À confirmer : commit `formulaire` · `?.` → `!` sur `btn` / `btnRetour` · `dist` dans `.gitignore`.
+5. Puis : habillage CSS classique (+ `@keyframes`) · découpage en modules · **lecture des composants classes React** (condition posée, test final sur Apheiro) · créneau **event loop**.
