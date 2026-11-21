@@ -7,9 +7,26 @@
     <title>odin-library</title>
   </head>
   <body>
-    <h1>Bibliothèque</h1>
+    <header>
+      <h1>Bibliothèque</h1>
+    </header>
 
-    <button id="btnAdd">Nouveau livre</button>
+    <main>
+      <button id="btnAdd">Nouveau livre</button>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Titre</th>
+            <th scope="col">Auteur</th>
+            <th scope="col">Pages</th>
+            <th scope="col">Statut</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody id="liste-livres"></tbody>
+      </table>
+    </main>
+
     <dialog id="dialog">
       <form id="formulaire">
         <h2>Ajouter un livre</h2>
@@ -24,8 +41,6 @@
       </form>
     </dialog>
 
-    <ul id="liste-livres"></ul>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
-</html>
+  </html>
