@@ -10,7 +10,7 @@ if (bibliotheque.livres.length === 0) {
   bibliotheque.ajouterLivre("1984", "George Orwell", 376, true);
 }
 
-const listeLivre = document.querySelector<HTMLUListElement>("#liste-livres")!;
+const listeLivre = document.querySelector<HTMLTableSectionElement>("#liste-livres")!;
 const btn = document.querySelector<HTMLButtonElement>("#btnAdd")!;
 const dialog = document.querySelector<HTMLDialogElement>("#dialog")!;
 const formulaire = document.querySelector<HTMLFormElement>("#formulaire")!;

@@ -1,25 +1,29 @@
 import type { Livre } from "./livre";
 
-
-export function afficherBibliotheque(listeLivre: HTMLUListElement, bibliotheque: Livre[]) {
+export function afficherBibliotheque(listeLivre: HTMLTableSectionElement, bibliotheque: Livre[]) {
   listeLivre.innerHTML = "";
 
   for (const livre of bibliotheque) {
-    const li = document.createElement("li");
-    const titre = document.createElement("h2");
-    const auteur = document.createElement("p");
-    const pages = document.createElement("p");
-    const btnSup = document.createElement("button");
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    const tdAuteur = document.createElement("td");
+    const tdPages = document.createElement("td");
+    const tdCaseLu = document.createElement("td");
     const etiquette = document.createElement("label");
     const caseLu = document.createElement("input");
+    const tdBtnSup = document.createElement("td");
+    const btnSup = document.createElement("button");
 
-    titre.textContent = livre.titre;
-    auteur.textContent = livre.auteur;
-    pages.textContent = `${livre.pages} ${livre.pages <= 1 ? "page" : "pages"}`;
+    th.textContent = livre.titre;
+    th.scope = "row";
+    tdAuteur.textContent = livre.auteur;
+    tdPages.textContent = String(livre.pages);
 
-    btnSup.textContent = "supprimer";
+    btnSup.textContent = "Supprimer";
     btnSup.setAttribute("data-id", livre.id);
     btnSup.setAttribute("data-action", "supprimer");
+    tdBtnSup.append(btnSup);
+    tdBtnSup.classList.add("bouton");
 
     caseLu.type = "checkbox";
     caseLu.checked = livre.lu;
@@ -27,8 +31,9 @@ export function afficherBibliotheque(listeLivre: HTMLUListElement, bibliotheque:
     caseLu.setAttribute("data-action", "check");
 
     etiquette.append(caseLu, livre.lu ? "Lu" : "À lire");
+    tdCaseLu.append(etiquette);
 
-    li.append(titre, auteur, pages, etiquette, btnSup);
-    listeLivre.appendChild(li);
+    tr.append(th, tdAuteur, tdPages, tdCaseLu, tdBtnSup);
+    listeLivre.appendChild(tr);
   }
 }

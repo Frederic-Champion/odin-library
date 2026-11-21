@@ -189,3 +189,63 @@ Démonstration XSS proposée (titre `<img onerror>` en `innerHTML` puis en `text
 4. **Habillage en CSS classique** (+ `@keyframes`).
 5. **Lecture des composants classes React**, test final sur Apheiro.
 6. Créneau court **event loop**.
+
+## Session 156 — Révisions `Map` / `FormData` + Library : instances perdues après `JSON.parse` (reconstruction, `id` conservé, `try` / `catch`), habillage CSS classique (palette, `<table>`, points 1 à 5)
+
+**Durée** : 3h (samedi, 11h-16h50 avec pauses). Énergie bonne. **Déception exprimée vers 14h30** : « je connais toutes ces notions et je n'arrive pas encore à faire seul ».
+
+**🎹 Raccourci** : `Ctrl+Alt+↓` / `↑` (Add Cursor Below / Above) — non renseigné, reconduit.
+
+**Git** : commit + push faits sur `bibliotheque` ; **PR `formulaire` et `bibliotheque` → `main` : pas faites** (« plus tard »).
+
+---
+
+### Révision éclair (2 items)
+
+- **Prédire — `Map`** 🟢 4/4 à froid : `set` sur une clé existante (remplace) et `get` d'une clé absente (`undefined`), ratés en S153, justes. `has` sur une valeur `0` → `true`, raison juste (`has` regarde la clé, pas la valeur). Représentation mentale en tableau d'objets → forme `Map(2) { 'Oakley' => 9 }` montrée.
+- **Écrire — `FormData` + `fromEntries`** 🟢 à froid, **pour la première fois** (`new FormData(client)` avec le formulaire, raté en S152). Seul écart : `client?.` au lieu de `!` sur un élément structurel.
+- Questions de fond : forme et usage de `Map` (clés de tout type, `.size`, perdue par `JSON.stringify` ; objet = norme, `Map` quand la clé n'est pas une chaîne — exemple `Map<Livre, HTMLLIElement>`) · `entries` (démonte un objet simple) vs `fromEntries` (remonte des paires) · **`Object.entries(formData)` → `[]`** (champs internes, pas des propriétés) · un `FormData` parcouru livre des paires (`[...data]`). Usage de `Map` : « encore abstrait » (jamais utilisée).
+
+### Library — instances perdues après rechargement
+
+- **Test 2** : `TypeError: … basculerLu is not a function` observé (non repéré par lui sans aide). Case cochée par le navigateur malgré l'erreur → écran ≠ données. TS muet : `JSON.parse` renvoie `any`, `livres: Livre[]` le croit.
+- Raison : le texte JSON ne garde que les données, la méthode vit sur la classe → **compris et reformulé**.
+- Reconstruction `.map((l: Livre) => new Livre(...))` : consigne longue → « je ne comprends rien », version courte → bloqué → **réponse demandée et donnée**.
+- **Nouvel `id` à chaque F5** : problème compris (identité dans le temps : URL, base, références). **Paramètre `id?` + `this.id = id ?? crypto.randomUUID()` écrit seul, du premier coup** 🟢.
+- **`try` / `catch` autour du `JSON.parse`** 🔴 : 1ᵉʳ jet `this.livres = try { … }` + `typeof saved !== "object"` (une chaîne, `throw` systématique) + aucun repli dans le `catch`. Débloqué sur « `this.livres` dans chaque branche » → toujours bloqué → **réponse demandée et donnée** (`donnees` → `Array.isArray` → `map`, repli `[]`). Erreurs TS lues : `2564` (propriété non assignée) causée par `1109` (`Expression expected`, reste de `this.livres = try`).
+- **Tests non confirmés** : `id` identique après F5 · valeur `abc` dans le `localStorage` → page vide sans plantage.
+
+**Pourquoi ça a bloqué** : les trois notions sont connues séparément ; c'est leur **assemblage** dans un même bloc, sans modèle, qui ne vient pas encore. Ma consigne les empilait.
+
+### Habillage — CSS classique
+
+- **Reset** : `*, *::before, *::after { box-sizing: border-box }` (variante `inherit` lue par lui, comparée : rare, utile avec une bibliothèque en `content-box`) · 🔴 `margin: auto` sur `*` → `margin: 0` (`auto` absorbe l'espace en flex) · centrage par `max-width` + `margin-inline: auto` sur `body`, pas sur `html` 🟢 compris.
+- « Centré à gauche » → **aperçu VS Code plus étroit que `60rem`**, vu par `outline` temporaire (méthode d'observation).
+- **Références** (3 démos ouvertes et vérifiées) : choix du **style tableau sombre** (deanwagner).
+- **Palette** donnée à sa demande (tokens par rôle dans `:root`, `color-scheme: dark`) + `body` par défaut.
+- **`<ul>` → `<table>`** 🟢 : `<thead>` en dur, `<tbody>` rempli par le JS, titre en `<th>`, écrit seul (MDN relu). Retouches : `scope="row"`, type `HTMLTableSectionElement` (`<HTMLUListElement>` + `!` mentaient à TS), « Statut ». Pourquoi un tableau aligne seul (largeur de colonne = cellule la plus large) 🟢.
+- `tbody tr:nth-child(even)` · `border-spacing: 0` (vs `border-collapse`, qui ignore `border-radius`) — expliqués, appliqués par lui.
+- **Points 1 à 5 donnés en fichier complet à sa demande (manque de temps)** : bouton d'accent, `:focus-visible`, `[data-action="supprimer"]`, `label:has(input:checked)`, `accent-color`, `:nth-child(3)` + `tabular-nums`, modale (`margin: auto` à remettre après le reset, `::backdrop`, champs en colonne). **Rendu non vérifié à l'écran.**
+
+---
+
+**Niveaux** : `Map` 🟢 (à froid) / usage 🟡 · `FormData` + `fromEntries` 🟢 (à froid, 1ʳᵉ fois) · `entries` vs `fromEntries` sur un `FormData` 🟢 compris · `?.` → `!` 🟡 (rechute) · méthodes perdues par JSON 🟢 compris · reconstruction d'instances par `map` 🟡 (donnée) · paramètre optionnel + `??` 🟢 · `try` / `catch` qui affecte une valeur 🔴 (donné) · `JSON.parse` protégé 🔴 → donné · reset CSS (`margin: 0` vs `auto`) 🟡 · `margin-inline: auto` 🟢 · `<table>` / `scope` 🟢 · `:nth-child` 🟢 · `border-spacing` 🟢 compris · `:has()` / sélecteur d'attribut 🟡 (donnés, non pratiqués).
+
+**🆕 Notions ouvertes ce jour** : reconstruction d'instances après `JSON.parse` · `:has()` · sélecteur d'attribut `[data-…]` · `:nth-child` · `border-spacing` · `margin-inline`.
+
+**⚠️ Mes erreurs**
+1. **Consigne `try` / `catch` empilant trois choses** (instruction sans valeur, validation, reconstruction). Récurrence du dosage.
+2. **Consigne de reconstruction trop longue** (deux étapes + piège de l'`id` d'un coup) → « je ne comprends rien ». Ce qui a marché : 3 lignes, avant / après sur sa propre ligne de code. **Correctif : une étape, sur son code, en quelques lignes.**
+
+**🔄 Cycle de reprise** : `@keyframes` → **demain** (modale, puis nouvelle ligne) · classe TS → rejouée (constructeur à paramètre optionnel) · `Map` → usage à recroiser · `reduce` regroupement → à confirmer une fois.
+
+**🔄 Rotation** : **entrent** — `try` / `catch` qui affecte une valeur dans chaque branche (autre code, priorité haute) · `JSON.parse` perd les méthodes → reconstruire · paramètre optionnel + `??` · `Object.entries(formData)` → `[]` · reset `margin: 0` vs `auto` · `:has()` / sélecteur d'attribut / `:nth-child`. **Descendent** — `Map` (juste à froid) · `FormData` + `fromEntries` (juste à froid, à confirmer une fois). **Restent** — `?.` masquant vs `!` · pas de classe Tailwind construite par morceaux · `setTimeout` / file d'attente.
+
+**🗂️ Documents à mettre à jour** : `Projets_realises_Frederic` (Library : reconstruction des instances, `localStorage` protégé, habillage en cours).
+
+**⏭️ Prochaine étape**
+1. Confirmer : tests `id` après F5 et `abc` dans le `localStorage` · rendu des points 1 à 5 à l'écran.
+2. **`@keyframes`** : ouverture de la modale, puis apparition d'une nouvelle ligne (piège : `afficherBibliotheque` reconstruit tout le tableau) · enveloppe `prefers-reduced-motion`. Survol des lignes en `transition` (option).
+3. Mobile (tableau qui défile horizontalement) · Lighthouse · PR `formulaire` + `bibliotheque`.
+4. **Lecture des composants classes React** (condition posée, test final sur Apheiro).
+5. Créneau court **event loop**.

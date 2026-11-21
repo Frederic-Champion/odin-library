@@ -5,7 +5,15 @@ export class Bibliotheque {
 
   constructor() {
     const saved = localStorage.getItem("bibliotheque");
-    this.livres = saved ? JSON.parse(saved) : [];
+
+    try {
+      const donnees = saved ? JSON.parse(saved) : [];
+      if (!Array.isArray(donnees)) throw new Error("ce n'est pas une bibliothèque");
+      this.livres = donnees.map((l: Livre) => new Livre(l.titre, l.auteur, l.pages, l.lu, l.id));
+    } catch (e) {
+      if (e instanceof Error) console.log("erreur :", e.message);
+      this.livres = [];
+    }
   }
 
   ajouterLivre(titre: string, auteur: string, pages: number, lu: boolean): void {

@@ -6,8 +6,8 @@ export class Livre {
   pages: number;
   lu: boolean;
 
-  constructor(titre: string, auteur: string, pages: number,lu: boolean) {
-    this.id = crypto.randomUUID();
+  constructor(titre: string, auteur: string, pages: number,lu: boolean, id?: string) {
+    this.id = id || crypto.randomUUID();
     this.titre = titre;
     this.auteur = auteur;
     this.pages = pages;
